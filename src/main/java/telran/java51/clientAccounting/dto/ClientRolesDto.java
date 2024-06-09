@@ -1,4 +1,4 @@
-package telran.java51.clientAccount.dto;
+package telran.java51.clientAccounting.dto;
 
 import java.util.Set;
 
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserRolesDto {
+public class ClientRolesDto {
 	
 	String login;
 	Set<String> roles;

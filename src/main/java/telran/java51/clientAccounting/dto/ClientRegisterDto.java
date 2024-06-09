@@ -1,9 +1,9 @@
-package telran.java51.clientAccount.dto;
+package telran.java51.clientAccounting.dto;
 
 import lombok.Getter;
 
 @Getter
-public class UserRegisterDto {	
+public class ClientRegisterDto {	
 	
 	    String login;
 	    String password;

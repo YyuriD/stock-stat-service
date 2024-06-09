@@ -1,4 +1,4 @@
-package telran.java51.clientAccount.dto;
+package telran.java51.clientAccounting.dto;
 
 import java.util.Set;
 
@@ -12,7 +12,7 @@ import lombok.Singular;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserDto {
+public class ClientDto {
 
 	String login;
     String firstName;
