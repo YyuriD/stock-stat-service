@@ -1,4 +1,4 @@
-package telran.java51.clientAccounting.dto;
+package telran.java51.accounting.dto;
 
 import java.util.Set;
 

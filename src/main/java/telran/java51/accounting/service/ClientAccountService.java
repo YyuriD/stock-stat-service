@@ -1,9 +1,9 @@
-package telran.java51.clientAccounting.service;
+package telran.java51.accounting.service;
 
-import telran.java51.clientAccounting.dto.ClientDto;
-import telran.java51.clientAccounting.dto.ClientRegisterDto;
-import telran.java51.clientAccounting.dto.ClientRolesDto;
-import telran.java51.clientAccounting.dto.ClientUpdateDto;
+import telran.java51.accounting.dto.ClientDto;
+import telran.java51.accounting.dto.ClientRegisterDto;
+import telran.java51.accounting.dto.ClientRolesDto;
+import telran.java51.accounting.dto.ClientUpdateDto;
 
 public interface ClientAccountService {
 	

@@ -1,9 +1,8 @@
-package telran.java51.clientAccounting.controller;
+package telran.java51.accounting.controller;
 
 import java.security.Principal;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,15 +12,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
-import telran.java51.clientAccounting.dto.ClientDto;
-import telran.java51.clientAccounting.dto.ClientRegisterDto;
-import telran.java51.clientAccounting.dto.ClientRolesDto;
-import telran.java51.clientAccounting.dto.ClientUpdateDto;
-import telran.java51.clientAccounting.service.ClientAccountService;
+import telran.java51.accounting.dto.ClientDto;
+import telran.java51.accounting.dto.ClientRegisterDto;
+import telran.java51.accounting.dto.ClientRolesDto;
+import telran.java51.accounting.dto.ClientUpdateDto;
+import telran.java51.accounting.service.ClientAccountService;
 
-@Controller
+@RestController
 @RequiredArgsConstructor
 @RequestMapping("/account")
 public class ClientAccountController {
