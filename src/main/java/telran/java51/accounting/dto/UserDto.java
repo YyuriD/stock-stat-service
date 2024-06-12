@@ -12,7 +12,7 @@ import lombok.Singular;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ClientDto {
+public class UserDto {
 
 	String login;
     String firstName;

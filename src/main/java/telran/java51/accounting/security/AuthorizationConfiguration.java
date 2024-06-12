@@ -7,6 +7,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 
+import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
 
 
@@ -18,11 +19,13 @@ public class AuthorizationConfiguration {
 	public SecurityFilterChain web(HttpSecurity http) throws Exception {
 		http.httpBasic(Customizer.withDefaults());
 		http.csrf(csrf -> csrf.disable());//
-		http.headers().frameOptions().disable();//for H2 render
-		http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.ALWAYS));// add cookies and session authn		
-		http.authorizeHttpRequests(authorize -> authorize.requestMatchers("/account/register", "/h2-console/**")
+		http.headers().frameOptions().disable(); //for H2 render	
+		http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.ALWAYS));// add cookies and session authn			
+		http.authorizeHttpRequests(authorize -> authorize				
+				.dispatcherTypeMatchers( DispatcherType.ERROR ).permitAll() //for correct response if case exception(409,403 etc)
+				.requestMatchers("/account/register", "/h2-console/**")
 				.permitAll()	
-				.anyRequest().authenticated());
+				.anyRequest().authenticated());		
 		return http.build();
 	}
 }

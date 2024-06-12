@@ -3,7 +3,7 @@ package telran.java51.accounting.dto;
 import lombok.Getter;
 
 @Getter
-public class ClientRegisterDto {	
+public class UserRegisterDto {	
 	
 	    String login;
 	    String password;
