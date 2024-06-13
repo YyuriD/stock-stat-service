@@ -24,7 +24,7 @@ import telran.java51.accounting.service.UserAccountService;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/account")
-public class ClientAccountController {
+public class UserAccountController {
 	
 	final UserAccountService userAccountService;
 	

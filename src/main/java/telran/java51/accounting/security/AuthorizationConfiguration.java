@@ -2,13 +2,16 @@ package telran.java51.accounting.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
 
 import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
+import telran.java51.accounting.model.Role;
 
 
 @Configuration
@@ -25,6 +28,12 @@ public class AuthorizationConfiguration {
 				.dispatcherTypeMatchers( DispatcherType.ERROR ).permitAll() //for correct response if case exception(409,403 etc)
 				.requestMatchers("/account/register", "/h2-console/**")
 				.permitAll()	
+				.requestMatchers(HttpMethod.DELETE, "/account/user/{login}")
+				.access(new WebExpressionAuthorizationManager("#login == authentication.name or hasRole('ADMIN')"))
+				.requestMatchers(HttpMethod.PUT, "/account/user/{login}")
+				.access(new WebExpressionAuthorizationManager("#login == authentication.name"))
+				.requestMatchers("/account/user/{login}/role/{role}").hasRole(Role.ADMIN.name())
+				
 				.anyRequest().authenticated());		
 		return http.build();
 	}

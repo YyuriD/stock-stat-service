@@ -7,13 +7,13 @@ import telran.java51.accounting.dto.UserUpdateDto;
 
 public interface UserAccountService {
 	
-	UserDto register(UserRegisterDto clientRegisterDto);
+	UserDto register(UserRegisterDto userRegisterDto);
 	
 	UserDto getUser(String login);
 	
 	UserDto removeUser(String login);
 	
-	UserDto updateUser(String login, UserUpdateDto clientUpdateDto);
+	UserDto updateUser(String login, UserUpdateDto userUpdateDto);
 	
 	UserRolesDto addRole(String login, String role);
 	

@@ -45,38 +45,53 @@ public class UserAccountServiceImpl implements UserAccountService, CommandLineRu
 
 	@Override
 	public UserDto removeUser(String login) {
-		// TODO Auto-generated method stub
-		return null;
+		UserAccount userAccount = userAccountRepository.findById(login).orElseThrow(UserNotFoundException::new);
+		userAccountRepository.delete(userAccount);
+		return modelMapper.map(userAccount, UserDto.class);
 	}
 
 	@Override
-	public UserDto updateUser(String login, UserUpdateDto clientUpdateDto) {
-		// TODO Auto-generated method stub
-		return null;
+	public UserDto updateUser(String login, UserUpdateDto userUpdateDto) {
+		UserAccount userAccount = userAccountRepository.findById(login).orElseThrow(UserNotFoundException::new);
+		if (userUpdateDto.getFirstName() != null) {
+			userAccount.setFirstName(userUpdateDto.getFirstName());
+		}
+		if (userUpdateDto.getLastName() != null) {
+			userAccount.setLastName(userUpdateDto.getLastName());
+		}
+		userAccountRepository.save(userAccount);
+		return modelMapper.map(userAccount, UserDto.class);
 	}
 
 	@Override
 	public UserRolesDto addRole(String login, String role) {
-		// TODO Auto-generated method stub
-		return null;
+		UserAccount userAccount = userAccountRepository.findById(login).orElseThrow(UserNotFoundException::new);
+		if(userAccount.addRole(role)) {
+			userAccountRepository.save(userAccount);
+		}
+		return modelMapper.map(userAccount, UserRolesDto.class);
 	}
 
 	@Override
 	public UserRolesDto removeRole(String login, String role) {
-		// TODO Auto-generated method stub
-		return null;
+		UserAccount userAccount = userAccountRepository.findById(login).orElseThrow(UserNotFoundException::new);
+		if(userAccount.removeRole(role)) {
+			userAccountRepository.save(userAccount);
+		}
+		return modelMapper.map(userAccount, UserRolesDto.class);
 	}
 
 	@Override
 	public void changePassword(String login, String newPassword) {
-		// TODO Auto-generated method stub
-
+		UserAccount userAccount = userAccountRepository.findById(login).orElseThrow(UserNotFoundException::new);
+		String password = passwordEncoder.encode(newPassword);
+		userAccount.setPassword(password);
+		userAccountRepository.save(userAccount);
 	}
 
 	@Override
 	public void recoveryPasswordLink(String email) {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override
