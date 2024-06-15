@@ -5,7 +5,7 @@ import telran.java51.stockStat.dto.CalcDto;
 import telran.java51.stockStat.dto.IncomeWithApyDto;
 import telran.java51.stockStat.dto.IndexLinkDto;
 import telran.java51.stockStat.dto.NewIndexDto;
-import telran.java51.stockStat.dto.PeriodBeetwinResponseDto;
+import telran.java51.stockStat.dto.PeriodBeetwinDto;
 import telran.java51.stockStat.dto.TimeHistoryDto;
 
 public interface StockStatService {
@@ -16,7 +16,7 @@ public interface StockStatService {
 	
 	public Iterable<String> getAllIndexes();
 	
-	public Iterable<PeriodBeetwinResponseDto> calcPeriodBeetwin(CalcDto calcDto);
+	public Iterable<PeriodBeetwinDto> calcPeriodBeetwin(CalcDto calcDto);
 	
 	public IncomeWithApyDto calcIncomeWithApy(CalcDto calcDto);
 	

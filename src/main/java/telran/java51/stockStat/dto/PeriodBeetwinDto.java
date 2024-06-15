@@ -3,7 +3,10 @@ package telran.java51.stockStat.dto;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-public class PeriodBeetwinResponseDto {
+import lombok.Getter;
+
+@Getter
+public class PeriodBeetwinDto {
 
 	LocalDate from;
     LocalDate to;

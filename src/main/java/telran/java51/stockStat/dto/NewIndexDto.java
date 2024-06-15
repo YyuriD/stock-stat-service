@@ -2,7 +2,10 @@ package telran.java51.stockStat.dto;
 
 import java.util.Map;
 
+import lombok.Getter;
+
+@Getter
 public class NewIndexDto {
 	
-	Map<String, String> indexToHTML;
+	public Map<String, String> indexToHTML;
 }
