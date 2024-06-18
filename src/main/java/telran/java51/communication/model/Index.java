@@ -1,4 +1,4 @@
-package telran.java51.stockStat.model;
+package telran.java51.communication.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

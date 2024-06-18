@@ -1,4 +1,4 @@
-package telran.java51.stockStat.model;
+package telran.java51.communication.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

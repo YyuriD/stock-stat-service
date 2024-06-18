@@ -1,4 +1,6 @@
-package telran.java51.stockStat.dto;
+package telran.java51.communication.dto;
+
+import java.time.LocalDate;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -7,8 +9,9 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class IndexLinkDto {
-	
+public class TimeHistoryDto {
+
 	String source;
-    String yohoofinance;
+	LocalDate fromData;
+	LocalDate toData;
 }

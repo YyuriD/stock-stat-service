@@ -1,27 +1,32 @@
-package telran.java51.stockStat.service;
+package telran.java51.communication.service;
 
+import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
-import telran.java51.stockStat.dao.IndexRepository;
-import telran.java51.stockStat.dto.CalcCorrelationDto;
-import telran.java51.stockStat.dto.CalcDto;
-import telran.java51.stockStat.dto.IncomeWithApyDto;
-import telran.java51.stockStat.dto.IndexLinkDto;
-import telran.java51.stockStat.dto.NewIndexDto;
-import telran.java51.stockStat.dto.PeriodBeetwinDto;
-import telran.java51.stockStat.dto.TimeHistoryDto;
-import telran.java51.stockStat.model.Index;
+import telran.java51.communication.dao.IndexRepository;
+import telran.java51.communication.dao.TradingRepository;
+import telran.java51.communication.dto.CalcCorrelationDto;
+import telran.java51.communication.dto.CalcDto;
+import telran.java51.communication.dto.IncomeWithApyDto;
+import telran.java51.communication.dto.IndexLinkDto;
+import telran.java51.communication.dto.NewIndexDto;
+import telran.java51.communication.dto.PeriodBeetwinDto;
+import telran.java51.communication.dto.TimeHistoryDto;
+import telran.java51.communication.model.Index;
+import telran.java51.communication.model.TradingSession;
 
 @Service
 @RequiredArgsConstructor
 public class StockStatServiceImpl implements StockStatService {
 
 	final IndexRepository indexRepository;
+	final TradingRepository tradingRepository;
 
 	@Override
 	public Iterable<IndexLinkDto> addNewIndex(NewIndexDto newIndexDto) {
@@ -40,8 +45,10 @@ public class StockStatServiceImpl implements StockStatService {
 
 	@Override
 	public TimeHistoryDto getTimeHystory(String indexName) {
-		// TODO Auto-generated method stub
-		return null;
+		Index index = indexRepository.findByIndexName(indexName);
+		LocalDate fromData = tradingRepository.findTopByTickerNameOrderByDateAsc(index.getTickerName()).getDate(); 
+		LocalDate toData = tradingRepository.findTopByTickerNameOrderByDateDesc(index.getTickerName()).getDate(); 
+		return new TimeHistoryDto(indexName, fromData, toData);
 	}
 
 	@Override

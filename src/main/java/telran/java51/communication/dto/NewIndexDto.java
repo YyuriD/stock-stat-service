@@ -1,4 +1,4 @@
-package telran.java51.stockStat.dto;
+package telran.java51.communication.dto;
 
 import java.util.Map;
 

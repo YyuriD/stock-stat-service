@@ -1,4 +1,4 @@
-package telran.java51.stockStat.controller;
+package telran.java51.communication.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -8,14 +8,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
-import telran.java51.stockStat.dto.CalcCorrelationDto;
-import telran.java51.stockStat.dto.CalcDto;
-import telran.java51.stockStat.dto.IncomeWithApyDto;
-import telran.java51.stockStat.dto.IndexLinkDto;
-import telran.java51.stockStat.dto.NewIndexDto;
-import telran.java51.stockStat.dto.PeriodBeetwinDto;
-import telran.java51.stockStat.dto.TimeHistoryDto;
-import telran.java51.stockStat.service.StockStatServiceImpl;
+import telran.java51.communication.dto.CalcCorrelationDto;
+import telran.java51.communication.dto.CalcDto;
+import telran.java51.communication.dto.IncomeWithApyDto;
+import telran.java51.communication.dto.IndexLinkDto;
+import telran.java51.communication.dto.NewIndexDto;
+import telran.java51.communication.dto.PeriodBeetwinDto;
+import telran.java51.communication.dto.TimeHistoryDto;
+import telran.java51.communication.service.StockStatServiceImpl;
 
 @RestController
 @RequiredArgsConstructor
