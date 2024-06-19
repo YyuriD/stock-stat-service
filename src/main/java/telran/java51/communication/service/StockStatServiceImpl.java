@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.UnsupportedMediaTypeStatusException;
@@ -35,6 +37,7 @@ import telran.java51.communication.utils.Utils;
 
 @Service
 @RequiredArgsConstructor
+@EnableScheduling
 public class StockStatServiceImpl implements StockStatService {
 
 	final String yahooBaseUrl = "https://query1.finance.yahoo.com/v7/finance/download/";
@@ -51,7 +54,7 @@ public class StockStatServiceImpl implements StockStatService {
 		checkedIndexes.removeAll(existIndexes);
 		existIndexes.addAll(checkedIndexes);
 		indexRepository.saveAll(existIndexes);
-		downloadScheduler();
+//		updateDataFromRemoteService();
 		return checkedIndexes.stream()
 				.map(i -> new IndexLinkDto(i.getIndexName(),
 						"https://finance.yahoo.com/quote/" + i.getTickerName() + "/history?p=" + i.getTickerName()))
@@ -116,7 +119,8 @@ public class StockStatServiceImpl implements StockStatService {
 		}
 	}
 
-	private void downloadScheduler() {
+	@Scheduled(cron = "0 0 19 * * *")
+	private void updateDataFromRemoteService() {
 		Set<Index> indexes = StreamSupport.stream(indexRepository.findAll().spliterator(), true)
 				.collect(Collectors.toSet());
 		Set<TradingSession> tradingSessions = new HashSet<>();
