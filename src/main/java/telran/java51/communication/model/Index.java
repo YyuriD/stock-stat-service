@@ -20,7 +20,7 @@ import lombok.ToString;
 public class Index {
 	
 	@Column(unique=true)
-	String indexName;
+	String source;
 	@Id
 	String tickerName;
 }

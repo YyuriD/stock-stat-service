@@ -54,9 +54,9 @@ public class StockStatServiceImpl implements StockStatService {
 		checkedIndexes.removeAll(existIndexes);
 		existIndexes.addAll(checkedIndexes);
 		indexRepository.saveAll(existIndexes);
-//		updateDataFromRemoteService();
+		updateDataFromRemoteService();
 		return checkedIndexes.stream()
-				.map(i -> new IndexLinkDto(i.getIndexName(),
+				.map(i -> new IndexLinkDto(i.getSource(),
 						"https://finance.yahoo.com/quote/" + i.getTickerName() + "/history?p=" + i.getTickerName()))
 				.collect(Collectors.toSet());
 	}
@@ -74,7 +74,7 @@ public class StockStatServiceImpl implements StockStatService {
 	@Override
 	public Iterable<String> getAllIndexes() {
 		return StreamSupport.stream(indexRepository.findAll().spliterator(), true)
-				.map(i -> i.getIndexName())
+				.map(i -> i.getSource())
 				.collect(Collectors.toSet());
 	}
 
@@ -119,14 +119,14 @@ public class StockStatServiceImpl implements StockStatService {
 		}
 	}
 
-	@Scheduled(cron = "0 0 19 * * *")
+	@Scheduled(cron = "0 0 19 * * *") 
 	private void updateDataFromRemoteService() {
 		Set<Index> indexes = StreamSupport.stream(indexRepository.findAll().spliterator(), true)
 				.collect(Collectors.toSet());
 		Set<TradingSession> tradingSessions = new HashSet<>();
 		String date = LocalDate.now().toString();
 		for (Index index : indexes) {
-			tradingSessions.addAll(getDataFromRemoteService(index.getTickerName(), date, date, index.getIndexName()));
+			tradingSessions.addAll(getDataFromRemoteService(index.getTickerName(), date, date, index.getSource()));
 		}		
 		addTradingSessions(tradingSessions);
 	}
