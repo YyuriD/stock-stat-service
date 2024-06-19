@@ -13,9 +13,10 @@ public interface TradingRepository extends CrudRepository<TradingSession, Tradin
 	
 	@Transactional
 	void deleteByTickerName(String name);
-	@Transactional
-	TradingSession findTopByTickerNameOrderByDateAsc(String tickerName);
-	TradingSession findTopByTickerNameOrderByDateDesc(String tickerName);
+	
+	TradingSession findTopBySourceOrderByDateAsc(String tickerName);
+	TradingSession findTopBySourceOrderByDateDesc(String tickerName);
+	boolean existsBySource(String source);
 	
 	
 }

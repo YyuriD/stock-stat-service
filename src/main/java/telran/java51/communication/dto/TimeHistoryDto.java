@@ -12,6 +12,6 @@ import lombok.NoArgsConstructor;
 public class TimeHistoryDto {
 
 	String source;
-	LocalDate fromData;
-	LocalDate toData;
+	LocalDate fromDate;
+	LocalDate toDate;
 }
