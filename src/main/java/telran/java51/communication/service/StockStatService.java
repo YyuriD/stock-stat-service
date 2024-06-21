@@ -3,7 +3,7 @@ package telran.java51.communication.service;
 import java.util.Set;
 
 import telran.java51.communication.dto.CalcCorrelationDto;
-import telran.java51.communication.dto.CalcDto;
+import telran.java51.communication.dto.CalcIncomeDto;
 import telran.java51.communication.dto.IncomeWithApyDto;
 import telran.java51.communication.dto.IndexLinkDto;
 import telran.java51.communication.dto.NewIndexDto;
@@ -19,9 +19,9 @@ public interface StockStatService {
 	
 	public Iterable<String> getAllIndexes();
 	
-	public Iterable<PeriodBeetwinDto> calcPeriodBeetwin(CalcDto calcDto);
+	public Iterable<PeriodBeetwinDto> calcPeriodBeetwin(CalcIncomeDto calcDto);
 	
-	public IncomeWithApyDto calcIncomeWithApy(CalcDto calcDto);
+	public IncomeWithApyDto calcIncomeWithApy(CalcIncomeDto calcDto);
 	
 	public String calcCorrelation(CalcCorrelationDto calcCorrelationDto);
 		

@@ -3,7 +3,10 @@ package telran.java51.communication.dto;
 import java.time.LocalDate;
 import java.util.Set;
 
-public class CalcDto {
+import lombok.Getter;
+
+@Getter
+public class CalcIncomeDto {
 	
 	Set<String> indexs;
 	String type;

@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 import telran.java51.communication.dao.IndexRepository;
 import telran.java51.communication.dao.TradingRepository;
 import telran.java51.communication.dto.CalcCorrelationDto;
-import telran.java51.communication.dto.CalcDto;
+import telran.java51.communication.dto.CalcIncomeDto;
 import telran.java51.communication.dto.IncomeWithApyDto;
 import telran.java51.communication.dto.IndexLinkDto;
 import telran.java51.communication.dto.NewIndexDto;
@@ -79,14 +79,27 @@ public class StockStatServiceImpl implements StockStatService {
 	}
 
 	@Override
-	public Iterable<PeriodBeetwinDto> calcPeriodBeetwin(CalcDto calcDto) {
+	public Iterable<PeriodBeetwinDto> calcPeriodBeetwin(CalcIncomeDto calcIncomeDto) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public IncomeWithApyDto calcIncomeWithApy(CalcDto calcDto) {
-		// TODO Auto-generated method stub
+	public IncomeWithApyDto calcIncomeWithApy(CalcIncomeDto calcIncomeDto) {
+		
+		 Set<String> indexes = indexRepository.findAllBySourceIn(calcIncomeDto.getIndexs())
+				 .stream().map(i-> i.getSource()).collect(Collectors.toSet());
+		for (String string : indexes) {
+			System.out.println(string);
+		}
+		System.out.println("Date from " + calcIncomeDto.getFrom().toString());
+		System.out.println("Date from " + calcIncomeDto.getTo().toString());
+		 
+		 Set<TradingSession> sessions = tradingRepository
+				 .findByDateBetween(calcIncomeDto.getFrom(),calcIncomeDto.getFrom());
+		
+		 System.out.println("Sessions" +sessions.size());
+		 
 		return null;
 	}
 
@@ -156,5 +169,7 @@ public class StockStatServiceImpl implements StockStatService {
 		}
 		return Utils.parseTradingSessions(response.getBody(), tickerName, source);
 	}
+	
+	
 
 }

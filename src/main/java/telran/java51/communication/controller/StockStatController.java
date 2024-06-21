@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 import telran.java51.communication.dto.CalcCorrelationDto;
-import telran.java51.communication.dto.CalcDto;
+import telran.java51.communication.dto.CalcIncomeDto;
 import telran.java51.communication.dto.IncomeWithApyDto;
 import telran.java51.communication.dto.IndexLinkDto;
 import telran.java51.communication.dto.NewIndexDto;
@@ -40,12 +40,12 @@ public class StockStatController {
 	}
 
 	@PostMapping("/index")
-	public Iterable<PeriodBeetwinDto> calcPeriodBeetwin(@RequestBody CalcDto calcDto) {
+	public Iterable<PeriodBeetwinDto> calcPeriodBeetwin(@RequestBody CalcIncomeDto calcDto) {
 		return stockStatService.calcPeriodBeetwin(calcDto);
 	}
 
 	@PostMapping("/index/apy")
-	public IncomeWithApyDto calcIncomeWithApy(@RequestBody CalcDto calcDto) {
+	public IncomeWithApyDto calcIncomeWithApy(@RequestBody CalcIncomeDto calcDto) {
 		return stockStatService.calcIncomeWithApy(calcDto);
 	}
 
