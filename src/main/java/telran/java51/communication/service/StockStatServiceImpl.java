@@ -2,11 +2,17 @@ package telran.java51.communication.service;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import org.hibernate.internal.util.type.PrimitiveWrapperHelper.IntegerDescriptor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -30,8 +36,11 @@ import telran.java51.communication.dto.IndexLinkDto;
 import telran.java51.communication.dto.NewIndexDto;
 import telran.java51.communication.dto.PeriodBeetwinDto;
 import telran.java51.communication.dto.TimeHistoryDto;
+import telran.java51.communication.exceptions.PeriodException;
 import telran.java51.communication.exceptions.SourceNotFoundException;
+import telran.java51.communication.model.Income;
 import telran.java51.communication.model.Index;
+import telran.java51.communication.model.PeriodType;
 import telran.java51.communication.model.TradingSession;
 import telran.java51.communication.utils.Utils;
 
@@ -73,8 +82,7 @@ public class StockStatServiceImpl implements StockStatService {
 
 	@Override
 	public Iterable<String> getAllIndexes() {
-		return StreamSupport.stream(indexRepository.findAll().spliterator(), true)
-				.map(i -> i.getSource())
+		return StreamSupport.stream(indexRepository.findAll().spliterator(), true).map(i -> i.getSource())
 				.collect(Collectors.toSet());
 	}
 
@@ -87,26 +95,67 @@ public class StockStatServiceImpl implements StockStatService {
 	@Override
 	public IncomeWithApyDto calcIncomeWithApy(CalcIncomeDto calcIncomeDto) {
 		
-		 Set<String> indexes = indexRepository.findAllBySourceIn(calcIncomeDto.getIndexs())
-				 .stream().map(i-> i.getSource()).collect(Collectors.toSet());
-		for (String string : indexes) {
-			System.out.println(string);
-		}
-		System.out.println("Date from " + calcIncomeDto.getFrom().toString());
-		System.out.println("Date from " + calcIncomeDto.getTo().toString());
-		 
-		 Set<TradingSession> sessions = tradingRepository
-				 .findByDateBetween(calcIncomeDto.getFrom(),calcIncomeDto.getFrom());
+		List<String> sources = indexRepository.findAllBySourceIn(calcIncomeDto.getIndexs()).stream()
+				.map(i -> i.getSource()).collect(Collectors.toList());
 		
-		 System.out.println("Sessions" +sessions.size());
-		 
-		return null;
+		List<List<TradingSession>> allTradings = new ArrayList<>();
+		
+		for (int i = 0; i < sources.size(); i++) {
+			List<TradingSession> tradings = tradingRepository.findByDateBetweenAndSource(calcIncomeDto.getFrom(),
+					calcIncomeDto.getTo(), sources.get(i));
+			allTradings.add(tradings);
+		}
+
+		int periodInDays = calcDaysQuantity(calcIncomeDto.getQuantity(), calcIncomeDto.getType());
+		int totalDays = (int)ChronoUnit.DAYS.between(calcIncomeDto.getFrom(), calcIncomeDto.getTo());
+		
+		LocalDate fromDate = calcIncomeDto.getFrom();
+		LocalDate toDate = calcIncomeDto.getFrom().plusDays(periodInDays);	
+		List<Income> incomes = new ArrayList<>();
+		
+		for (int i = 0; i < totalDays - 1; i++) {
+			Set<TradingSession> purchaseSessions = new HashSet<>();
+			Set<TradingSession> saleSessions = new HashSet<>();
+			for (int j = 0; j < allTradings.size(); j++) {
+				purchaseSessions.add(findTradingByDate(allTradings.get(j),fromDate));
+				saleSessions.add(findTradingByDate(allTradings.get(j),toDate));
+			}			
+			incomes.add(new Income(purchaseSessions, saleSessions));
+			fromDate = fromDate.plusDays(1);
+			toDate = toDate.plusDays(1);
+		}
+		
+		Collections.sort(incomes);
+	
+		return null;//return IncomeWithApyDto
 	}
 
 	@Override
 	public String calcCorrelation(CalcCorrelationDto calcCorrelationDto) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	private Integer calcDaysQuantity(Integer quantity, String type) {	
+		if(quantity <= 0) {
+			throw new PeriodException();
+		}
+		switch (PeriodType.valueOf(type)) {
+		case DAYS:
+			return quantity;
+		case WEEKS:
+			return quantity * 7;
+		case MONTHS:
+			return quantity * 30;
+		case YEARS:
+			return quantity * 365;
+		case DECADES:
+			return quantity * 3652;
+		case CENTURIES:
+			return quantity * 36520;
+		default:
+			throw new PeriodException();		
+		}	
 	}
 
 	private Set<Index> checkIndexes(Set<Index> indexes) {
@@ -132,15 +181,16 @@ public class StockStatServiceImpl implements StockStatService {
 		}
 	}
 
-	@Scheduled(cron = "0 0 19 * * *") 
+	@Scheduled(cron = "0 0 19 * * *")
 	private void updateDataFromRemoteService() {
 		Set<Index> indexes = StreamSupport.stream(indexRepository.findAll().spliterator(), true)
 				.collect(Collectors.toSet());
 		Set<TradingSession> tradingSessions = new HashSet<>();
-		String date = LocalDate.now().toString();
+		String toDate = LocalDate.now().toString();
+		String fromDate = LocalDate.now().minusYears(1).toString();// TODO number exception???
 		for (Index index : indexes) {
-			tradingSessions.addAll(getDataFromRemoteService(index.getTickerName(), date, date, index.getSource()));
-		}		
+			tradingSessions.addAll(getDataFromRemoteService(index.getTickerName(), toDate, toDate, index.getSource()));
+		}
 		addTradingSessions(tradingSessions);
 	}
 
@@ -169,7 +219,5 @@ public class StockStatServiceImpl implements StockStatService {
 		}
 		return Utils.parseTradingSessions(response.getBody(), tickerName, source);
 	}
-	
-	
 
 }

@@ -10,7 +10,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class Income {
+public class Income implements Comparable<Income> {
 
 	public Income(Set<TradingSession> purchaseSessions, Set<TradingSession> saleSessions) {
 		
@@ -36,6 +36,11 @@ public class Income {
 		double periodInYears = (double)periodInDays / 365;
 		double incomeInPercent = saleAmount.subtract(purchaseAmount).divide(purchaseAmount).doubleValue();
 		return Math.pow(1 + incomeInPercent, periodInYears);
+	}
+
+	@Override
+	public int compareTo(Income o) {
+		return income.compareTo(o.income);
 	}
 }
 

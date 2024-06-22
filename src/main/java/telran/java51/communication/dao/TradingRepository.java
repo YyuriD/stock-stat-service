@@ -1,13 +1,13 @@
 package telran.java51.communication.dao;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import jakarta.transaction.Transactional;
-import telran.java51.communication.model.Index;
 import telran.java51.communication.model.TradingSession;
 import telran.java51.communication.model.TradingSessionId;
 
@@ -22,7 +22,7 @@ public interface TradingRepository extends CrudRepository<TradingSession, Tradin
 	TradingSession findTopBySourceOrderByDateDesc(String tickerName);
 	boolean existsBySource(String source);
 
-	Set<TradingSession> findByDateBetween(LocalDate from, LocalDate to);
-	
-	
+	List<TradingSession> findByDateBetweenAndSource(LocalDate from, LocalDate to, String source);
+
+		
 }

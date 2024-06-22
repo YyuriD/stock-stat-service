@@ -27,7 +27,7 @@ public final class Utils {
 	public static Set<TradingSession> parseCsv(Reader csvReader, String tickerName, String source) {
 		CSVFormat csvFormat = CSVFormat.DEFAULT.builder().setHeader(TradingSessionHeaders.class).setSkipHeaderRecord(true)
 				.setIgnoreHeaderCase(true).build();
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("[dd/MM/yyyy]" + "[yyyy-MM-dd]" + "[MM/dd/yyyy]");
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("[dd/MM/yyyy]" + "[yyyy-MM-dd]" + "[MM/dd/yyyy]" +  "[yyyy/MM/dd]");
 		Set<TradingSession> tradingSessions = new HashSet<TradingSession>();
 		Iterable<CSVRecord> csvRecords = null;
 		try {
