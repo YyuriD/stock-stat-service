@@ -4,7 +4,7 @@ public enum PeriodType {
 	DAYS,
 	WEEKS,
 	MONTHS,
-	DECADES,
 	YEARS,
+	DECADES,
 	CENTURIES		
 }
