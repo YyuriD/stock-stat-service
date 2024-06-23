@@ -15,17 +15,16 @@ import telran.java51.communication.exceptions.SourceNotFoundException;
 public class Income implements Comparable<Income> {
 
 	public Income(Set<TradingSession> purchaseSessions, Set<TradingSession> saleSessions) {
-		if(purchaseSessions == null || saleSessions == null) {
-			throw new SourceNotFoundException();//TODO
+		if (purchaseSessions == null || saleSessions == null) {
+			throw new SourceNotFoundException();// TODO
 		}
 		this.dateOfPurchase = purchaseSessions.iterator().next().getDate();
 		this.dateOfSale = saleSessions.iterator().next().getDate();
-		this.purchaseAmount = purchaseSessions.stream().map(s-> s.getOpen())
-				.reduce(BigDecimal.ZERO, (n1,n2)-> n1.add(n2));
-		this.saleAmount = saleSessions.stream().map(s-> s.getClose())
-				.reduce(BigDecimal.ZERO, (n1,n2)-> n1.add(n2));
+		this.purchaseAmount = purchaseSessions.stream().map(s -> s.getOpen()).reduce(BigDecimal.ZERO,
+				(n1, n2) -> n1.add(n2));
+		this.saleAmount = saleSessions.stream().map(s -> s.getClose()).reduce(BigDecimal.ZERO, (n1, n2) -> n1.add(n2));
 		this.income = saleAmount.subtract(purchaseAmount);
-		this.apy = 	calculateApy();	
+		this.apy = calculateApy();
 	}
 
 	LocalDate dateOfPurchase;
@@ -34,12 +33,10 @@ public class Income implements Comparable<Income> {
 	BigDecimal saleAmount;
 	BigDecimal income;
 	Double apy;
-	
+
 	private Double calculateApy() {
-		long periodInDays = ChronoUnit.DAYS.between(getDateOfSale(), getDateOfPurchase());
-		double periodInYears = (double)periodInDays / 365;
-		double incomeInPercent = saleAmount.subtract(purchaseAmount).divide(purchaseAmount,2,RoundingMode.HALF_UP).doubleValue();
-		return Math.pow(1 + incomeInPercent, periodInYears);
+//		long periodInDays = ChronoUnit.DAYS.between(getDateOfPurchase(), getDateOfSale());
+		return income.doubleValue() / purchaseAmount.doubleValue() * 100;
 	}
 
 	@Override
@@ -47,5 +44,3 @@ public class Income implements Comparable<Income> {
 		return income.compareTo(o.income);
 	}
 }
-
-	

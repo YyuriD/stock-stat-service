@@ -101,8 +101,7 @@ public class StockStatServiceImpl implements StockStatService {
 			throw new WrongParametersException();
 		}
 			
-		List<List<TradingSession>> allTradings = new ArrayList<>();
-		
+		List<List<TradingSession>> allTradings = new ArrayList<>();		
 		for (int i = 0; i < source.size(); i++) {
 			List<TradingSession> tradings = tradingRepository.findByDateBetweenAndSource(calcIncomeDto.getFrom(),
 					calcIncomeDto.getTo(), source.get(i));
@@ -155,8 +154,6 @@ public class StockStatServiceImpl implements StockStatService {
 				index = list.size() - 1;
 			}
 		}
-		System.out.println("index2 = " + index);
-
 		return list.get(index);
 	}
 
@@ -212,12 +209,12 @@ public class StockStatServiceImpl implements StockStatService {
 		}
 	}
 
-	@Scheduled(cron = "0 39 9 * * *")
+	@Scheduled(cron = "0 6 15 * * *")
 	private void updateDataFromRemoteService() {
 		Set<Index> indexes = StreamSupport.stream(indexRepository.findAll().spliterator(), true)
 				.collect(Collectors.toSet());
 		Set<TradingSession> tradingSessions = new HashSet<>();
-		String toDate = LocalDate.now().minusDays(1000).toString();
+		String toDate = LocalDate.now().toString();// 
 //		String fromDate = LocalDate.now().minusYears(1).toString();// TODO number exception???
 		for (Index index : indexes) {
 			tradingSessions.addAll(getDataFromRemoteService(index.getTickerName(), toDate, toDate, index.getSource()));
@@ -232,7 +229,8 @@ public class StockStatServiceImpl implements StockStatService {
 		return tradingRepository.count() - prevQuantity;
 	}
 
-	@Override
+	//*********************** Blocked by Yahoo service ******************************************
+	@Override 
 	public Set<TradingSession> getDataFromRemoteService(String tickerName, String fromDate, String toDate,
 			String source) {
 		String fromTimestamp = Long.toString(Utils.getTimestampFromDateString(fromDate));
