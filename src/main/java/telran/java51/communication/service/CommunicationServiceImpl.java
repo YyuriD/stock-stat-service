@@ -23,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.UnsupportedMediaTypeStatusException;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -131,13 +132,37 @@ public class CommunicationServiceImpl implements CommunicationService {
 						 calcIncomeDto.getTo(), i.get(0).getSources().get(0),
 						 calcIncomeDto.getQuantity() +  " " + calcIncomeDto.getType(),
 						 i.get(i.size()-1).getIncome(),
-						 calcMean(i), null, i.get(0).getIncome(),null)).collect(Collectors.toList());
+						 calcMean(i), calcMedian(i),
+						 i.get(0).getIncome(),calcStdDeviation(i))).collect(Collectors.toList());
 	}
 
 	private BigDecimal calcMean(List<Income> incomes) {
 		BigDecimal res = incomes.stream().map(i-> i.getIncome()).reduce(BigDecimal.ZERO, (n1,n2)-> n1.add(n2));
 		res = res.divide(new BigDecimal(incomes.size()), 2,RoundingMode.HALF_UP);
 		return res;
+	}
+	
+	private BigDecimal calcMedian(List<Income> incomes) {
+		Collections.sort(incomes);
+		int size = incomes.size();
+		if(incomes.size()%2 == 0) {
+			return (incomes.get(size/2 - 1)
+					.getIncome().add(incomes.get(incomes.size()/2)
+							.getIncome())).divide(new BigDecimal(2));
+		}else {
+			return incomes.get(size/2).getIncome();
+		}
+	}
+	
+	private BigDecimal calcStdDeviation(List<Income> incomes) {
+		double mean = calcMean(incomes).doubleValue(); 
+        double sumOfSquaredDifferences = 0.0;
+        List<Double> values = incomes.stream().map(i-> i.getIncome().doubleValue()).collect(Collectors.toList());
+        for (Double value : values) {
+            sumOfSquaredDifferences += Math.pow(value - mean, 2);  
+        }
+        double meanOfSquaredDifferences = sumOfSquaredDifferences / values.size(); 
+        return BigDecimal.valueOf(Math.sqrt(meanOfSquaredDifferences)); 
 	}
 	
 	
@@ -256,15 +281,19 @@ public class CommunicationServiceImpl implements CommunicationService {
 		}
 	}
 
-	@Scheduled(cron = "0 6 15 * * *")
+	@Scheduled(cron = "0 0 7 * * *")
 	private void updateDataFromRemoteService() {
 		Set<Index> indexes = StreamSupport.stream(indexRepository.findAll().spliterator(), true)
 				.collect(Collectors.toSet());
 		Set<TradingSession> tradingSessions = new HashSet<>();
-		String toDate = LocalDate.now().toString();// 
-//		String fromDate = LocalDate.now().minusYears(1).toString();// TODO number exception???
+		String toDate = LocalDate.now().toString(); 
+		String fromDate = LocalDate.now().minusDays(1).toString(); 
 		for (Index index : indexes) {
-			tradingSessions.addAll(getDataFromRemoteService(index.getTickerName(), toDate, toDate, index.getSource()));
+			Set<TradingSession> set = getDataFromRemoteService(index.getTickerName(), fromDate, toDate, index.getSource());
+			if(set == null) {
+				continue;
+			}
+			tradingSessions.addAll(set);
 		}
 		addTradingSessions(tradingSessions);
 	}
@@ -276,23 +305,33 @@ public class CommunicationServiceImpl implements CommunicationService {
 		return tradingRepository.count() - prevQuantity;
 	}
 
-	//*********************** Blocked by Yahoo service ******************************************
 	@Override 
 	public Set<TradingSession> getDataFromRemoteService(String tickerName, String fromDate, String toDate,
 			String source) {
-		String fromTimestamp = Long.toString(Utils.getTimestampFromDateString(fromDate));
-		String toTimestamp = Long.toString(Utils.getTimestampFromDateString(toDate));
-		RestTemplate restTemplate = new RestTemplate();
-		HttpHeaders headers = new HttpHeaders();
-		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(yahooBaseUrl + tickerName)
-				.queryParam("interval", "1d").queryParam("period1", fromTimestamp).queryParam("period2", toTimestamp);
-		URI url = builder.build().toUri();
-		RequestEntity<String> request = new RequestEntity<>(headers, HttpMethod.GET, url);
-		ResponseEntity<String> response = restTemplate.exchange(request, String.class);
-		MediaType contentType = MediaType.parseMediaType("text/csv; charset=UTF-8");
-		if (!response.getHeaders().getContentType().equalsTypeAndSubtype(contentType)) {
-			throw new UnsupportedMediaTypeStatusException(contentType.toString());
-		}
+			String fromTimestamp = Long.toString(Utils.getTimestampFromDateString(fromDate));
+			String toTimestamp = Long.toString(Utils.getTimestampFromDateString(toDate));
+			RestTemplate restTemplate = new RestTemplate();
+			HttpHeaders headers = new HttpHeaders();
+			UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(yahooBaseUrl + tickerName)
+					.queryParam("interval", "1d").queryParam("period1", fromTimestamp).queryParam("period2", toTimestamp);
+			URI url = builder.build().toUri();
+			RequestEntity<String> request = new RequestEntity<>(headers, HttpMethod.GET, url);
+			
+			ResponseEntity<String> response;		
+			try {
+				response = restTemplate.exchange(request, String.class);
+			} catch (RestClientException e) {
+				System.out.println(e.getMessage() + "; fromTimestamp = " 
+						+ fromTimestamp + "; toTimestamp = "  + toTimestamp
+						+ "; source = " + source + ";");
+				return null;
+			}		
+			MediaType contentType = MediaType.parseMediaType("text/csv; charset=UTF-8");
+			if (!response.getHeaders().getContentType().equalsTypeAndSubtype(contentType)) {
+				throw new UnsupportedMediaTypeStatusException(contentType.toString());
+			}
+	
+				
 		return Utils.parseTradingSessions(response.getBody(), tickerName, source);
 	}
 }
