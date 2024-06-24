@@ -1,5 +1,7 @@
 package telran.java51.communication.service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -122,15 +124,23 @@ public class CommunicationServiceImpl implements CommunicationService {
 			fromDate = fromDate.plusDays(1);
 			toDate = toDate.plusDays(1);
 		}
-		allIncomes.stream().forEach(i-> Collections.sort(i));	
+		allIncomes.stream().forEach(i-> Collections.sort(i));
+		
 		return allIncomes.stream()
 				.map(i-> new PeriodBeetwinDto(calcIncomeDto.getFrom(),
 						 calcIncomeDto.getTo(), i.get(0).getSources().get(0),
 						 calcIncomeDto.getQuantity() +  " " + calcIncomeDto.getType(),
 						 i.get(i.size()-1).getIncome(),
-						 null, null, i.get(0).getIncome(),null)).collect(Collectors.toList());
+						 calcMean(i), null, i.get(0).getIncome(),null)).collect(Collectors.toList());
 	}
 
+	private BigDecimal calcMean(List<Income> incomes) {
+		BigDecimal res = incomes.stream().map(i-> i.getIncome()).reduce(BigDecimal.ZERO, (n1,n2)-> n1.add(n2));
+		res = res.divide(new BigDecimal(incomes.size()), 2,RoundingMode.HALF_UP);
+		return res;
+	}
+	
+	
 	@Override
 	public IncomeWithApyDto calcIncomeWithApy(CalcIncomeDto calcIncomeDto) {
 		List<String> source = indexRepository.findAllBySourceIn(calcIncomeDto.getIndexs()).stream()
@@ -285,5 +295,4 @@ public class CommunicationServiceImpl implements CommunicationService {
 		}
 		return Utils.parseTradingSessions(response.getBody(), tickerName, source);
 	}
-
 }
