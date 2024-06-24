@@ -13,7 +13,6 @@ import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
 import telran.java51.accounting.model.Role;
 
-
 @Configuration
 @RequiredArgsConstructor
 public class AuthorizationConfiguration {

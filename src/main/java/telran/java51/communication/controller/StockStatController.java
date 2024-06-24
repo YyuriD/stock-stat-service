@@ -15,14 +15,14 @@ import telran.java51.communication.dto.IndexLinkDto;
 import telran.java51.communication.dto.NewIndexDto;
 import telran.java51.communication.dto.PeriodBeetwinDto;
 import telran.java51.communication.dto.TimeHistoryDto;
-import telran.java51.communication.service.StockStatServiceImpl;
+import telran.java51.communication.service.CommunicationServiceImpl;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/communication")
 public class StockStatController {
 	
-	final StockStatServiceImpl stockStatService;
+	final CommunicationServiceImpl stockStatService;
 	
 	@PostMapping("/parser/addIndex")
 	public Iterable<IndexLinkDto> addNewIndex(@RequestBody NewIndexDto newIndexDto) {

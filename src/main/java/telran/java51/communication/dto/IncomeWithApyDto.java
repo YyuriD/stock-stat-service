@@ -18,6 +18,5 @@ public class IncomeWithApyDto {
     List<String> source; 
     String type;   
     Income minIncome;       
-    Income maxIncome;
-    
+    Income maxIncome;    
 }

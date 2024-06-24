@@ -11,7 +11,7 @@ import telran.java51.communication.dto.PeriodBeetwinDto;
 import telran.java51.communication.dto.TimeHistoryDto;
 import telran.java51.communication.model.TradingSession;
 
-public interface StockStatService {
+public interface CommunicationService {
 
 	public Iterable<IndexLinkDto> addNewIndex(NewIndexDto newIndexDto);
 	

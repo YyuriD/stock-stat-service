@@ -24,9 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.UnsupportedMediaTypeStatusException;
 import org.springframework.web.util.UriComponentsBuilder;
-import org.yaml.snakeyaml.util.EnumUtils;
 
-import ch.qos.logback.core.joran.conditional.IfAction;
 import lombok.RequiredArgsConstructor;
 import telran.java51.communication.dao.IndexRepository;
 import telran.java51.communication.dao.TradingRepository;
@@ -37,8 +35,8 @@ import telran.java51.communication.dto.IndexLinkDto;
 import telran.java51.communication.dto.NewIndexDto;
 import telran.java51.communication.dto.PeriodBeetwinDto;
 import telran.java51.communication.dto.TimeHistoryDto;
-import telran.java51.communication.exceptions.WrongParametersException;
 import telran.java51.communication.exceptions.SourceNotFoundException;
+import telran.java51.communication.exceptions.WrongParametersException;
 import telran.java51.communication.model.Income;
 import telran.java51.communication.model.Index;
 import telran.java51.communication.model.PeriodType;
@@ -48,7 +46,7 @@ import telran.java51.communication.utils.Utils;
 @Service
 @RequiredArgsConstructor
 @EnableScheduling
-public class StockStatServiceImpl implements StockStatService {
+public class CommunicationServiceImpl implements CommunicationService {
 
 	final String yahooBaseUrl = "https://query1.finance.yahoo.com/v7/finance/download/";
 	final IndexRepository indexRepository;
@@ -87,10 +85,50 @@ public class StockStatServiceImpl implements StockStatService {
 				.collect(Collectors.toSet());
 	}
 
-	@Override
+	@Override 
 	public Iterable<PeriodBeetwinDto> calcPeriodBeetwin(CalcIncomeDto calcIncomeDto) {
-		// TODO Auto-generated method stub
-		return null;
+		List<String> source = indexRepository.findAllBySourceIn(calcIncomeDto.getIndexs()).stream()
+				.map(i -> i.getSource()).collect(Collectors.toList());		
+		if(source.size() < 1 || calcIncomeDto.getQuantity() <= 0) {
+			throw new WrongParametersException();
+		}
+			
+		List<List<TradingSession>> allTradings = new ArrayList<>();	
+		List<List<Income>> allIncomes = new ArrayList<>();
+		for (int i = 0; i < source.size(); i++) {
+			List<TradingSession> tradings = tradingRepository.findByDateBetweenAndSource(calcIncomeDto.getFrom(),
+					calcIncomeDto.getTo(), source.get(i));
+			allTradings.add(tradings);
+			allIncomes.add(new ArrayList<Income>());
+		}
+
+		int periodInDays = calcDaysQuantity(calcIncomeDto.getQuantity(), calcIncomeDto.getType());
+		int totalDays = (int) ChronoUnit.DAYS.between(calcIncomeDto.getFrom(), calcIncomeDto.getTo());
+		if (totalDays < periodInDays) {
+			throw new WrongParametersException();
+		}
+		int counter = totalDays - periodInDays + 1;
+		LocalDate fromDate = calcIncomeDto.getFrom();
+		LocalDate toDate = calcIncomeDto.getFrom().plusDays(periodInDays);
+		
+		for (int i = 0; i < counter; i++) {			
+			for (int j = 0; j < allTradings.size(); j++) {
+				Set<TradingSession> purchaseSessions = new HashSet<>();
+				Set<TradingSession> saleSessions = new HashSet<>();
+				purchaseSessions.add( findTradingByDate(allTradings.get(j), fromDate));
+				saleSessions.add(findTradingByDate(allTradings.get(j), toDate));	
+				allIncomes.get(j).add(new Income(purchaseSessions, saleSessions));				
+			}
+			fromDate = fromDate.plusDays(1);
+			toDate = toDate.plusDays(1);
+		}
+		allIncomes.stream().forEach(i-> Collections.sort(i));	
+		return allIncomes.stream()
+				.map(i-> new PeriodBeetwinDto(calcIncomeDto.getFrom(),
+						 calcIncomeDto.getTo(), i.get(0).getSources().get(0),
+						 calcIncomeDto.getQuantity() +  " " + calcIncomeDto.getType(),
+						 i.get(i.size()-1).getIncome(),
+						 null, null, i.get(0).getIncome(),null)).collect(Collectors.toList());
 	}
 
 	@Override
@@ -115,7 +153,7 @@ public class StockStatServiceImpl implements StockStatService {
 		}
 		int counter = totalDays - periodInDays + 1;
 		LocalDate fromDate = calcIncomeDto.getFrom();
-		LocalDate toDate = calcIncomeDto.getFrom().plusDays(periodInDays - 1);
+		LocalDate toDate = calcIncomeDto.getFrom().plusDays(periodInDays);
 		List<Income> incomes = new ArrayList<>();
 
 		for (int i = 0; i < counter; i++) {
@@ -145,7 +183,6 @@ public class StockStatServiceImpl implements StockStatService {
 				return o1.getDate().compareTo(o2.getDate());
 			}
 		};
-
 		TradingSession pattern = new TradingSession(null, null, date, null, null, null, null, null, null);
 		int index = Collections.binarySearch(list, pattern, comparator);
 		if (index < 0) {

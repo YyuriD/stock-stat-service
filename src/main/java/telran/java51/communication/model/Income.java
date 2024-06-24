@@ -1,9 +1,9 @@
 package telran.java51.communication.model;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import lombok.Getter;
@@ -16,7 +16,7 @@ public class Income implements Comparable<Income> {
 
 	public Income(Set<TradingSession> purchaseSessions, Set<TradingSession> saleSessions) {
 		if (purchaseSessions == null || saleSessions == null) {
-			throw new SourceNotFoundException();// TODO
+			throw new SourceNotFoundException();
 		}
 		this.dateOfPurchase = purchaseSessions.iterator().next().getDate();
 		this.dateOfSale = saleSessions.iterator().next().getDate();
@@ -25,17 +25,19 @@ public class Income implements Comparable<Income> {
 		this.saleAmount = saleSessions.stream().map(s -> s.getClose()).reduce(BigDecimal.ZERO, (n1, n2) -> n1.add(n2));
 		this.income = saleAmount.subtract(purchaseAmount);
 		this.apy = calculateApy();
+		sources = new ArrayList<String>();
+		purchaseSessions.stream().forEach(s-> this.sources.add(s.getSource()));
 	}
 
-	LocalDate dateOfPurchase;
-	BigDecimal purchaseAmount;
-	LocalDate dateOfSale;
-	BigDecimal saleAmount;
-	BigDecimal income;
-	Double apy;
+	private LocalDate dateOfPurchase;
+	private BigDecimal purchaseAmount;
+	private LocalDate dateOfSale;
+	private BigDecimal saleAmount;
+	private BigDecimal income;
+	private Double apy;
+	private List<String> sources;
 
 	private Double calculateApy() {
-//		long periodInDays = ChronoUnit.DAYS.between(getDateOfPurchase(), getDateOfSale());
 		return income.doubleValue() / purchaseAmount.doubleValue() * 100;
 	}
 

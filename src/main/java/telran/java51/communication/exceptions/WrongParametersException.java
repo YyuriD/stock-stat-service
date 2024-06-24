@@ -8,10 +8,9 @@ import lombok.NoArgsConstructor;
 @ResponseStatus(code = HttpStatus.NOT_FOUND, reason = "Incorrect parameters")
 public class WrongParametersException extends RuntimeException {
 
+	private static final long serialVersionUID = 4866945051173862780L;
+	
 	public WrongParametersException(String message) {
 		
 	}
-
-	private static final long serialVersionUID = 4866945051173862780L;
-	
 }
