@@ -41,11 +41,13 @@ public class StockStatController {
 
 	@PostMapping("/index")
 	public Iterable<PeriodBeetwinDto> calcPeriodBeetwin(@RequestBody CalcIncomeDto calcDto) {
+		System.out.println("@PostMapping(\"/index\")");
 		return stockStatService.calcPeriodBeetwin(calcDto);
 	}
 
 	@PostMapping("/index/apy")
 	public IncomeWithApyDto calcIncomeWithApy(@RequestBody CalcIncomeDto calcDto) {
+		System.out.println("@PostMapping(\"/index/apy\")");
 		return stockStatService.calcIncomeWithApy(calcDto);
 	}
 
