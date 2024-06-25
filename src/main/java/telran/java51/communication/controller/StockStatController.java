@@ -36,6 +36,7 @@ public class StockStatController {
 
 	@GetMapping("/index")
 	public Iterable<String> getAllIndexes() {
+		System.out.println("@GetMapping(\"/index\")");
 		return stockStatService.getAllIndexes();
 	}
 
