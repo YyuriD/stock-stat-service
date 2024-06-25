@@ -20,6 +20,7 @@ public class AuthorizationConfiguration {
 	@Bean
 	public SecurityFilterChain web(HttpSecurity http) throws Exception {
 		http.httpBasic(Customizer.withDefaults());
+		http.cors().disable();
 		http.csrf(csrf -> csrf.disable());//
 		http.headers().frameOptions().disable(); //for H2 render	
 		http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.ALWAYS));// add cookies and session authn			
