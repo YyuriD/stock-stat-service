@@ -36,19 +36,16 @@ public class StockStatController {
 
 	@GetMapping("/index")
 	public Iterable<String> getAllIndexes() {
-		System.out.println("@GetMapping(\"/index\")");
 		return stockStatService.getAllIndexes();
 	}
 
 	@PostMapping("/index")
 	public Iterable<PeriodBeetwinDto> calcPeriodBeetwin(@RequestBody CalcIncomeDto calcDto) {
-		System.out.println("@PostMapping(\"/index\")");
 		return stockStatService.calcPeriodBeetwin(calcDto);
 	}
 
 	@PostMapping("/index/apy")
 	public IncomeWithApyDto calcIncomeWithApy(@RequestBody CalcIncomeDto calcDto) {
-		System.out.println("@PostMapping(\"/index/apy\")");
 		return stockStatService.calcIncomeWithApy(calcDto);
 	}
 
@@ -57,5 +54,4 @@ public class StockStatController {
 		return stockStatService.calcCorrelation(calcCorrelationDto);
 	}
 	
-
 }

@@ -36,6 +36,8 @@ import telran.java51.communication.dto.CalcIncomeDto;
 import telran.java51.communication.dto.IncomeWithApyDto;
 import telran.java51.communication.dto.IndexLinkDto;
 import telran.java51.communication.dto.NewIndexDto;
+import telran.java51.communication.dto.ParserRequestDto;
+import telran.java51.communication.dto.ParserResponseDto;
 import telran.java51.communication.dto.PeriodBeetwinDto;
 import telran.java51.communication.dto.TimeHistoryDto;
 import telran.java51.communication.exceptions.SourceNotFoundException;
@@ -281,13 +283,13 @@ public class CommunicationServiceImpl implements CommunicationService {
 		}
 	}
 
-	@Scheduled(cron = "0 0 7 * * *")
+	@Scheduled(cron = "0 00 00 * * *")
 	private void updateDataFromRemoteService() {
 		Set<Index> indexes = StreamSupport.stream(indexRepository.findAll().spliterator(), true)
 				.collect(Collectors.toSet());
 		Set<TradingSession> tradingSessions = new HashSet<>();
 		String toDate = LocalDate.now().toString(); 
-		String fromDate = LocalDate.now().minusDays(1).toString(); 
+		String fromDate = LocalDate.now().toString(); 
 		for (Index index : indexes) {
 			Set<TradingSession> set = getDataFromRemoteService(index.getTickerName(), fromDate, toDate, index.getSource());
 			if(set == null) {
@@ -295,7 +297,17 @@ public class CommunicationServiceImpl implements CommunicationService {
 			}
 			tradingSessions.addAll(set);
 		}
+		for (TradingSession tradingSession : tradingSessions) {
+			System.out.println("Added trading session of \"" + tradingSession.getSource() + "\""
+			+ " for " + tradingSession.getDate());
+		}
 		addTradingSessions(tradingSessions);
+	}
+	
+	@Override
+	public Iterable<ParserResponseDto> ParserForYahoo(ParserRequestDto parserRequestDto) {
+		
+		return null;
 	}
 
 	@Override
@@ -321,8 +333,8 @@ public class CommunicationServiceImpl implements CommunicationService {
 			try {
 				response = restTemplate.exchange(request, String.class);
 			} catch (RestClientException e) {
-				System.out.println(e.getMessage() + "; fromTimestamp = " 
-						+ fromTimestamp + "; toTimestamp = "  + toTimestamp
+				System.out.println(e.getMessage() + "; from date " 
+						+ fromDate.toString() + "; to date "  + toDate
 						+ "; source = " + source + ";");
 				return null;
 			}		
@@ -334,4 +346,6 @@ public class CommunicationServiceImpl implements CommunicationService {
 				
 		return Utils.parseTradingSessions(response.getBody(), tickerName, source);
 	}
+
+	
 }

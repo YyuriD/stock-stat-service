@@ -7,12 +7,16 @@ import telran.java51.communication.dto.CalcIncomeDto;
 import telran.java51.communication.dto.IncomeWithApyDto;
 import telran.java51.communication.dto.IndexLinkDto;
 import telran.java51.communication.dto.NewIndexDto;
+import telran.java51.communication.dto.ParserRequestDto;
+import telran.java51.communication.dto.ParserResponseDto;
 import telran.java51.communication.dto.PeriodBeetwinDto;
 import telran.java51.communication.dto.TimeHistoryDto;
 import telran.java51.communication.model.TradingSession;
 
 public interface CommunicationService {
 
+	public Iterable<ParserResponseDto> ParserForYahoo(ParserRequestDto parserRequestDto);
+	
 	public Iterable<IndexLinkDto> addNewIndex(NewIndexDto newIndexDto);
 	
 	public TimeHistoryDto getTimeHystory(String source);
