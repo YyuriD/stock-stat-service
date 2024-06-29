@@ -27,7 +27,7 @@ import lombok.ToString;
 @ToString
 @Table(name = "trading_sessions")
 @IdClass(TradingSessionId.class)
-public class TradingSession  implements Serializable{
+public class TradingSession  implements Serializable, Comparable<TradingSession> {
 
 	private static final long serialVersionUID = -179664029256824275L;
 		
@@ -51,6 +51,11 @@ public class TradingSession  implements Serializable{
 	BigDecimal adjClose;
 	
 	BigInteger volume;
+
+	@Override
+	public int compareTo(TradingSession o) {
+		return this.getDate().compareTo(o.getDate());
+	}
 
 	
 }

@@ -15,7 +15,7 @@ import telran.java51.communication.model.TradingSession;
 
 public interface CommunicationService {
 
-	public Iterable<ParserResponseDto> ParserForYahoo(ParserRequestDto parserRequestDto);
+	public Iterable<ParserResponseDto> parserForYahoo(ParserRequestDto parserRequestDto);
 	
 	public Iterable<IndexLinkDto> addNewIndex(NewIndexDto newIndexDto);
 	
@@ -31,6 +31,6 @@ public interface CommunicationService {
 		
 	public long addTradingSessions(Set<TradingSession> tradingSessions);
 	
-	public Set<TradingSession> getDataFromRemoteService(String tickerName, String fromDate, String toDate, String source);
+	public Iterable<TradingSession> getDataFromRemoteService(String tickerName, String fromDate, String toDate, String source);
 		
 }

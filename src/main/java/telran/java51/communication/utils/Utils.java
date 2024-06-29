@@ -35,7 +35,6 @@ public final class Utils {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
 		for (CSVRecord record : csvRecords) {
 			LocalDate date = LocalDate.parse(record.get(TradingSessionHeaders.DATE.name()), formatter);
 			BigDecimal open = BigDecimal.valueOf(Double.parseDouble(record.get(TradingSessionHeaders.OPEN.name())));

@@ -40,6 +40,7 @@ import telran.java51.communication.dto.ParserRequestDto;
 import telran.java51.communication.dto.ParserResponseDto;
 import telran.java51.communication.dto.PeriodBeetwinDto;
 import telran.java51.communication.dto.TimeHistoryDto;
+import telran.java51.communication.dto.UploadInfo;
 import telran.java51.communication.exceptions.SourceNotFoundException;
 import telran.java51.communication.exceptions.WrongParametersException;
 import telran.java51.communication.model.Income;
@@ -283,31 +284,52 @@ public class CommunicationServiceImpl implements CommunicationService {
 		}
 	}
 
-	@Scheduled(cron = "0 00 00 * * *")
+	@Scheduled(cron = "0 00 20 * * *")
 	private void updateDataFromRemoteService() {
 		Set<Index> indexes = StreamSupport.stream(indexRepository.findAll().spliterator(), true)
 				.collect(Collectors.toSet());
-		Set<TradingSession> tradingSessions = new HashSet<>();
-		String toDate = LocalDate.now().toString(); 
+		Set<TradingSession> allTradingSessions = new HashSet<>();
 		String fromDate = LocalDate.now().toString(); 
+		String toDate = LocalDate.now().toString(); 
 		for (Index index : indexes) {
 			Set<TradingSession> set = getDataFromRemoteService(index.getTickerName(), fromDate, toDate, index.getSource());
 			if(set == null) {
 				continue;
 			}
-			tradingSessions.addAll(set);
+			allTradingSessions.addAll(set);
 		}
-		for (TradingSession tradingSession : tradingSessions) {
+		for (TradingSession tradingSession : allTradingSessions) {
 			System.out.println("Added trading session of \"" + tradingSession.getSource() + "\""
 			+ " for " + tradingSession.getDate());
 		}
-		addTradingSessions(tradingSessions);
+		addTradingSessions(allTradingSessions);
 	}
 	
 	@Override
-	public Iterable<ParserResponseDto> ParserForYahoo(ParserRequestDto parserRequestDto) {
-		
-		return null;
+	public Iterable<ParserResponseDto> parserForYahoo(ParserRequestDto parserRequestDto) {
+		if(!parserRequestDto.getType().equals("1d")) {
+			throw new WrongParametersException();
+		}
+		Set<String> sources = parserRequestDto.getSource();
+		Set<Index> indexes = StreamSupport.stream(indexRepository.findAllBySourceIn(sources).spliterator(), true)
+				.collect(Collectors.toSet());			
+		Set<TradingSession> allTradingSessions = new HashSet<>();
+		List<ParserResponseDto> parserResponseDtos = new ArrayList<>();
+		String fromDate = parserRequestDto.getFromData().toString(); 
+		String toDate = parserRequestDto.getToData().plusDays(1).toString(); 
+		for (Index index : indexes) {
+			Set<TradingSession> tradingSessions = getDataFromRemoteService(index.getTickerName(), fromDate, toDate, index.getSource());
+			if(tradingSessions == null) {
+				continue;
+			}	
+			allTradingSessions.addAll(tradingSessions);
+			parserResponseDtos.addAll(tradingSessions.stream().sorted().map(s-> new ParserResponseDto(new UploadInfo(s.getDate(),
+					s.getSource()), s.getClose(), s.getVolume(),
+					s.getOpen(), s.getHigh(), s.getLow())).collect(Collectors.toList()));
+		}			
+		addTradingSessions(allTradingSessions);
+		System.out.println("Added " + allTradingSessions.size() + " trading sessions");
+		return parserResponseDtos;
 	}
 
 	@Override
@@ -341,9 +363,7 @@ public class CommunicationServiceImpl implements CommunicationService {
 			MediaType contentType = MediaType.parseMediaType("text/csv; charset=UTF-8");
 			if (!response.getHeaders().getContentType().equalsTypeAndSubtype(contentType)) {
 				throw new UnsupportedMediaTypeStatusException(contentType.toString());
-			}
-	
-				
+			}			
 		return Utils.parseTradingSessions(response.getBody(), tickerName, source);
 	}
 
