@@ -46,6 +46,7 @@ import telran.java51.communication.exceptions.WrongParametersException;
 import telran.java51.communication.model.Income;
 import telran.java51.communication.model.Index;
 import telran.java51.communication.model.PeriodType;
+import telran.java51.communication.model.TimeIntervalYahoo;
 import telran.java51.communication.model.TradingSession;
 import telran.java51.communication.utils.Utils;
 
@@ -307,16 +308,16 @@ public class CommunicationServiceImpl implements CommunicationService {
 	
 	@Override
 	public Iterable<ParserResponseDto> parserForYahoo(ParserRequestDto parserRequestDto) {
-		if(!parserRequestDto.getType().equals("1d")) {
+		if(!TimeIntervalYahoo.DAY.type.equals(parserRequestDto.getType())) {
 			throw new WrongParametersException();
 		}
+		String fromDate = parserRequestDto.getFromData().toString(); 
+		String toDate = parserRequestDto.getToData().plusDays(1).toString(); 
 		Set<String> sources = parserRequestDto.getSource();
 		Set<Index> indexes = StreamSupport.stream(indexRepository.findAllBySourceIn(sources).spliterator(), true)
 				.collect(Collectors.toSet());			
 		Set<TradingSession> allTradingSessions = new HashSet<>();
 		List<ParserResponseDto> parserResponseDtos = new ArrayList<>();
-		String fromDate = parserRequestDto.getFromData().toString(); 
-		String toDate = parserRequestDto.getToData().plusDays(1).toString(); 
 		for (Index index : indexes) {
 			Set<TradingSession> tradingSessions = getDataFromRemoteService(index.getTickerName(), fromDate, toDate, index.getSource());
 			if(tradingSessions == null) {
@@ -324,7 +325,7 @@ public class CommunicationServiceImpl implements CommunicationService {
 			}	
 			allTradingSessions.addAll(tradingSessions);
 			parserResponseDtos.addAll(tradingSessions.stream().sorted().map(s-> new ParserResponseDto(new UploadInfo(s.getDate(),
-					s.getSource()), s.getClose(), s.getVolume(),
+					s.getSource()), s.getClose(), s.getVolume().toString(),
 					s.getOpen(), s.getHigh(), s.getLow())).collect(Collectors.toList()));
 		}			
 		addTradingSessions(allTradingSessions);
@@ -368,4 +369,15 @@ public class CommunicationServiceImpl implements CommunicationService {
 	}
 
 	
+	@Override
+	public boolean deleteIndexAndHystory(String source) {	
+		Index index = indexRepository.findBySource(source).orElse(null);
+		if(index == null) {
+			return false;
+		}
+		indexRepository.deleteBySource(source);
+		tradingRepository.deleteBySource(source);
+		return true;
+	}
+
 }

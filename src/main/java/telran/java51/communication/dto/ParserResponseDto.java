@@ -16,7 +16,7 @@ public class ParserResponseDto {
 
 	  UploadInfo uploadInfoId;    
       BigDecimal close;
-      BigInteger volume;
+      String volume;
       BigDecimal open;
       BigDecimal high;
       BigDecimal low;

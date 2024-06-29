@@ -32,5 +32,6 @@ public interface CommunicationService {
 	public long addTradingSessions(Set<TradingSession> tradingSessions);
 	
 	public Iterable<TradingSession> getDataFromRemoteService(String tickerName, String fromDate, String toDate, String source);
-		
+	
+	public boolean deleteIndexAndHystory(String source);
 }

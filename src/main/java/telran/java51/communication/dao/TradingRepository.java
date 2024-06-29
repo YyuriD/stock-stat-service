@@ -20,9 +20,12 @@ public interface TradingRepository extends CrudRepository<TradingSession, Tradin
 	
 	TradingSession findTopBySourceOrderByDateAsc(String tickerName);
 	TradingSession findTopBySourceOrderByDateDesc(String tickerName);
+	
 	boolean existsBySource(String source);
-
+	
 	List<TradingSession> findByDateBetweenAndSource(LocalDate from, LocalDate to, String source);
-
-		
+	
+	@Transactional
+	void deleteBySource(String source);
+	
 }

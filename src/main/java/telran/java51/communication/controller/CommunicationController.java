@@ -1,5 +1,6 @@
 package telran.java51.communication.controller;
 
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,9 +32,9 @@ public class CommunicationController {
 		return communicationServiceImpl.addNewIndex(newIndexDto);
 	}
 
-	@GetMapping("index/{indexName}")
-	public TimeHistoryDto getTimeHystory(@PathVariable String indexName) {
-		return communicationServiceImpl.getTimeHystory(indexName);
+	@GetMapping("index/{source}")
+	public TimeHistoryDto getTimeHystory(@PathVariable String source) {
+		return communicationServiceImpl.getTimeHystory(source);
 	}
 
 	@GetMapping("/index")
@@ -44,6 +45,11 @@ public class CommunicationController {
 	@PostMapping("/index")
 	public Iterable<PeriodBeetwinDto> calcPeriodBeetwin(@RequestBody CalcIncomeDto calcDto) {
 		return communicationServiceImpl.calcPeriodBeetwin(calcDto);
+	}
+	
+	@DeleteMapping("/index/{source}")
+	public boolean deleteIndexAndHystory(@PathVariable String source) {
+		return communicationServiceImpl.deleteIndexAndHystory(source);
 	}
 
 	@PostMapping("/index/apy")
@@ -60,5 +66,7 @@ public class CommunicationController {
 	public Iterable<ParserResponseDto> ParserForYahoo(@RequestBody ParserRequestDto parserRequestDto) {
 		return communicationServiceImpl.parserForYahoo(parserRequestDto);
 	}
+	
+	
 	
 }
