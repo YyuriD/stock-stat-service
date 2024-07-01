@@ -2,6 +2,7 @@ package telran.java51.communication.service;
 
 import java.util.Set;
 
+import telran.java51.communication.dto.AllValueCloseBetweenDto;
 import telran.java51.communication.dto.CalcCorrelationDto;
 import telran.java51.communication.dto.CalcIncomeDto;
 import telran.java51.communication.dto.IncomeWithApyDto;
@@ -24,6 +25,8 @@ public interface CommunicationService {
 	public Iterable<String> getAllIndexes();
 	
 	public Iterable<PeriodBeetwinDto> calcPeriodBeetwin(CalcIncomeDto calcDto);
+	
+	public Iterable<AllValueCloseBetweenDto> getAllValueCloseBetween(CalcIncomeDto calcIncomeDto);
 	
 	public IncomeWithApyDto calcIncomeWithApy(CalcIncomeDto calcDto);
 	

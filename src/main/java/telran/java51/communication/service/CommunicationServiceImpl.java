@@ -6,6 +6,7 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -31,6 +32,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import lombok.RequiredArgsConstructor;
 import telran.java51.communication.dao.IndexRepository;
 import telran.java51.communication.dao.TradingRepository;
+import telran.java51.communication.dto.AllValueCloseBetweenDto;
 import telran.java51.communication.dto.CalcCorrelationDto;
 import telran.java51.communication.dto.CalcIncomeDto;
 import telran.java51.communication.dto.IncomeWithApyDto;
@@ -44,6 +46,7 @@ import telran.java51.communication.dto.UploadInfo;
 import telran.java51.communication.exceptions.SourceNotFoundException;
 import telran.java51.communication.exceptions.WrongParametersException;
 import telran.java51.communication.model.Income;
+import telran.java51.communication.model.IncomeWithList;
 import telran.java51.communication.model.Index;
 import telran.java51.communication.model.PeriodType;
 import telran.java51.communication.model.TimeIntervalYahoo;
@@ -96,7 +99,7 @@ public class CommunicationServiceImpl implements CommunicationService {
 	public Iterable<PeriodBeetwinDto> calcPeriodBeetwin(CalcIncomeDto calcIncomeDto) {
 		List<String> source = indexRepository.findAllBySourceIn(calcIncomeDto.getIndexs()).stream()
 				.map(i -> i.getSource()).collect(Collectors.toList());		
-		if(source.size() < 1 || calcIncomeDto.getQuantity() <= 0) {
+		if(source.size() < 1 || calcIncomeDto.getQuantity() < 1) {
 			throw new WrongParametersException();
 		}
 			
@@ -112,7 +115,7 @@ public class CommunicationServiceImpl implements CommunicationService {
 		int periodInDays = calcDaysQuantity(calcIncomeDto.getQuantity(), calcIncomeDto.getType());
 		int totalDays = (int) ChronoUnit.DAYS.between(calcIncomeDto.getFrom(), calcIncomeDto.getTo());
 		if (totalDays < periodInDays) {
-			throw new WrongParametersException();
+			return new ArrayList<PeriodBeetwinDto>();
 		}
 		int counter = totalDays - periodInDays + 1;
 		LocalDate fromDate = calcIncomeDto.getFrom();
@@ -290,7 +293,7 @@ public class CommunicationServiceImpl implements CommunicationService {
 		Set<Index> indexes = StreamSupport.stream(indexRepository.findAll().spliterator(), true)
 				.collect(Collectors.toSet());
 		Set<TradingSession> allTradingSessions = new HashSet<>();
-		String fromDate = LocalDate.now().toString(); 
+		String fromDate = LocalDate.now().minusDays(1).toString(); 
 		String toDate = LocalDate.now().toString(); 
 		for (Index index : indexes) {
 			Set<TradingSession> set = getDataFromRemoteService(index.getTickerName(), fromDate, toDate, index.getSource());
@@ -378,6 +381,55 @@ public class CommunicationServiceImpl implements CommunicationService {
 		indexRepository.deleteBySource(source);
 		tradingRepository.deleteBySource(source);
 		return true;
+	}
+
+	@Override
+	public Iterable<AllValueCloseBetweenDto> getAllValueCloseBetween(CalcIncomeDto calcIncomeDto) {
+		List<String> source = indexRepository.findAllBySourceIn(calcIncomeDto.getIndexs()).stream()
+				.map(i -> i.getSource()).collect(Collectors.toList());		
+		if(source.size() < 1 || calcIncomeDto.getQuantity() < 1) {
+			throw new WrongParametersException();
+		}
+			
+		List<List<TradingSession>> allTradings = new ArrayList<>();	
+		List<List<Income>> allIncomes = new ArrayList<>();
+		for (int i = 0; i < source.size(); i++) {
+			List<TradingSession> tradings = tradingRepository.findByDateBetweenAndSource(calcIncomeDto.getFrom(),
+					calcIncomeDto.getTo(), source.get(i));
+			allTradings.add(tradings);
+		}
+
+		int periodInDays = calcDaysQuantity(calcIncomeDto.getQuantity(), calcIncomeDto.getType());
+		int totalDays = (int) ChronoUnit.DAYS.between(calcIncomeDto.getFrom(), calcIncomeDto.getTo());
+		if (totalDays < periodInDays) {
+			return new ArrayList<AllValueCloseBetweenDto>();
+		}
+		int counter = totalDays - periodInDays + 1;
+		LocalDate fromDate = calcIncomeDto.getFrom();
+		LocalDate toDate = calcIncomeDto.getFrom().plusDays(periodInDays);
+		List<IncomeWithList> incomes  = new ArrayList<>();
+		
+		for (int i = 0; i < counter; i++) {			
+			for (int j = 0; j < allTradings.size(); j++) {
+				Set<TradingSession> purchaseSessions = new HashSet<>();
+				Set<TradingSession> saleSessions = new HashSet<>();
+				List<TradingSession> tradings = getTradingsBetwenDate(allTradings.get(j));	
+				purchaseSessions.add(tradings.get(0));
+				saleSessions.add(tradings.get(tradings.size()-1));
+				List<BigDecimal> closeValues = tradings.stream().map(c -> c.getClose()).collect(Collectors.toList());
+				incomes.add(new IncomeWithList(purchaseSessions, saleSessions, closeValues));				
+			}
+			fromDate = fromDate.plusDays(1);
+			toDate = toDate.plusDays(1);
+		}
+		
+		
+		return incomes.stream()
+				.map(i -> new AllValueCloseBetweenDto(calcIncomeDto.getFrom(),
+						calcIncomeDto.getTo(), i.getSources().get(0),
+						calcIncomeDto.getQuantity() + " " + calcIncomeDto.getType(),
+						i.getDateOfPurchase(), i.getDateOfSale(), i.getPurchaseAmount(),
+						i.getSaleAmount(), i.getIncome(), i.getCloses())).collect(Collectors.toList());	
 	}
 
 }

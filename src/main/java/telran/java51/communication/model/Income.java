@@ -20,7 +20,7 @@ public class Income implements Comparable<Income> {
 		}
 		this.dateOfPurchase = purchaseSessions.iterator().next().getDate();
 		this.dateOfSale = saleSessions.iterator().next().getDate();
-		this.purchaseAmount = purchaseSessions.stream().map(s -> s.getOpen()).reduce(BigDecimal.ZERO,
+		this.purchaseAmount = purchaseSessions.stream().map(s -> s.getClose()).reduce(BigDecimal.ZERO,
 				(n1, n2) -> n1.add(n2));
 		this.saleAmount = saleSessions.stream().map(s -> s.getClose()).reduce(BigDecimal.ZERO, (n1, n2) -> n1.add(n2));
 		this.income = saleAmount.subtract(purchaseAmount);
