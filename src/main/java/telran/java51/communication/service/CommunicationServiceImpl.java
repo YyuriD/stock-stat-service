@@ -6,7 +6,6 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -370,7 +369,6 @@ public class CommunicationServiceImpl implements CommunicationService {
 			}			
 		return Utils.parseTradingSessions(response.getBody(), tickerName, source);
 	}
-
 	
 	@Override
 	public boolean deleteIndexAndHystory(String source) {	
@@ -389,10 +387,9 @@ public class CommunicationServiceImpl implements CommunicationService {
 				.map(i -> i.getSource()).collect(Collectors.toList());		
 		if(source.size() < 1 || calcIncomeDto.getQuantity() < 1) {
 			throw new WrongParametersException();
-		}
-			
+		}		
 		List<List<TradingSession>> allTradings = new ArrayList<>();	
-		List<List<Income>> allIncomes = new ArrayList<>();
+		
 		for (int i = 0; i < source.size(); i++) {
 			List<TradingSession> tradings = tradingRepository.findByDateBetweenAndSource(calcIncomeDto.getFrom(),
 					calcIncomeDto.getTo(), source.get(i));
@@ -413,7 +410,7 @@ public class CommunicationServiceImpl implements CommunicationService {
 			for (int j = 0; j < allTradings.size(); j++) {
 				Set<TradingSession> purchaseSessions = new HashSet<>();
 				Set<TradingSession> saleSessions = new HashSet<>();
-				List<TradingSession> tradings = getTradingsBetwenDate(allTradings.get(j));	
+				List<TradingSession> tradings = getTradingsBetweeDate(allTradings.get(j),fromDate, toDate);	
 				purchaseSessions.add(tradings.get(0));
 				saleSessions.add(tradings.get(tradings.size()-1));
 				List<BigDecimal> closeValues = tradings.stream().map(c -> c.getClose()).collect(Collectors.toList());
@@ -422,14 +419,40 @@ public class CommunicationServiceImpl implements CommunicationService {
 			fromDate = fromDate.plusDays(1);
 			toDate = toDate.plusDays(1);
 		}
-		
-		
+		Comparator<IncomeWithList> c = (i1, i2) -> i1.getSources().get(0).compareTo(i2.getSources().get(0));
+		Collections.sort(incomes, c);
 		return incomes.stream()
 				.map(i -> new AllValueCloseBetweenDto(calcIncomeDto.getFrom(),
 						calcIncomeDto.getTo(), i.getSources().get(0),
 						calcIncomeDto.getQuantity() + " " + calcIncomeDto.getType(),
 						i.getDateOfPurchase(), i.getDateOfSale(), i.getPurchaseAmount(),
 						i.getSaleAmount(), i.getIncome(), i.getCloses())).collect(Collectors.toList());	
+	}
+
+	private List<TradingSession> getTradingsBetweeDate(List<TradingSession> list, LocalDate fromDate, LocalDate toDate) {
+		Comparator<TradingSession> comparator = new Comparator<TradingSession>() {
+			@Override
+			public int compare(TradingSession o1, TradingSession o2) {
+				return o1.getDate().compareTo(o2.getDate());
+			}
+		};
+		TradingSession pattern = new TradingSession(null, null, fromDate, null, null, null, null, null, null);
+		int fromIndex = Collections.binarySearch(list, pattern, comparator);
+		if (fromIndex < 0) {
+			fromIndex = -fromIndex - 1;
+			if(fromIndex >= list.size()) {
+				fromIndex = list.size() - 1;
+			}
+		}
+		pattern = new TradingSession(null, null, toDate, null, null, null, null, null, null);
+		int toIndex = Collections.binarySearch(list, pattern, comparator);
+		if (toIndex < 0) {
+			toIndex = -toIndex - 1;
+			if(toIndex >= list.size()) {
+				toIndex = list.size() - 1;
+			}
+		}
+		return list.subList(fromIndex, toIndex);
 	}
 
 }
