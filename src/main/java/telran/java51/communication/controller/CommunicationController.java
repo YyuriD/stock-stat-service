@@ -67,6 +67,4 @@ public class CommunicationController {
 		return communicationServiceImpl.parserForYahoo(parserRequestDto);
 	}
 	
-	
-	
 }
